@@ -1,0 +1,101 @@
+hash: f671b458fc0581d3254164c4d716ea71172a46ea9dc3f0ed4546dc24931a9d39
+updated: 2018-09-18T10:16:02.405428312Z
+imports:
+- name: github.com/alecthomas/kingpin
+  version: 947dcec5ba9c011838740e680966fd7087a71d0d
+- name: github.com/alecthomas/template
+  version: a0175ee3bccc567396460bf5acd36800cb10c49c
+  subpackages:
+  - parse
+- name: github.com/alecthomas/units
+  version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
+- name: github.com/docker/distribution
+  version: b089e91688254eb5aef187f188c8ee0ebe4e4675
+  subpackages:
+  - digestset
+  - reference
+- name: github.com/docker/docker
+  version: 90d35abf7b3535c1c319c872900fbd76374e521c
+  subpackages:
+  - api
+  - api/types
+  - api/types/blkiodev
+  - api/types/container
+  - api/types/events
+  - api/types/filters
+  - api/types/image
+  - api/types/mount
+  - api/types/network
+  - api/types/registry
+  - api/types/strslice
+  - api/types/swarm
+  - api/types/time
+  - api/types/versions
+  - api/types/volume
+  - client
+  - pkg/ioutils
+  - pkg/longpath
+  - pkg/system
+  - pkg/tlsconfig
+- name: github.com/docker/go-connections
+  version: 97c2040d34dfae1d1b1275fa3a78dbdd2f41cf7e
+  subpackages:
+  - nat
+  - sockets
+  - tlsconfig
+- name: github.com/docker/go-units
+  version: 47565b4f722fb6ceae66b95f853feed578a4a51c
+- name: github.com/docker/libtrust
+  version: aabc10ec26b754e797f9028f4589c5b7bd90dc20
+- name: github.com/fatih/color
+  version: 2d684516a8861da43017284349b7e303e809ac21
+- name: github.com/forj-oss/forjj-modules
+  version: 1fe84da5bc9ea9c8e809282fb17949656989e27d
+  subpackages:
+  - trace
+- name: github.com/forj-oss/goforjj
+  version: 88bd6c8b68a005d3d2a8c3652ae853fc9aeda12d
+- name: github.com/gorilla/context
+  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
+- name: github.com/gorilla/mux
+  version: e3702bed27f0d39777b0b37b664b6280e8ef8fbf
+- name: github.com/konsorten/go-windows-terminal-sequences
+  version: b729f2633dfe35f4d1d8a32385f6685610ce1cb5
+- name: github.com/mattn/go-colorable
+  version: efa589957cd060542a26d2dd7832fd6a6c6c3ade
+- name: github.com/mattn/go-isatty
+  version: 3fb116b820352b7f0c281308a4d6250c22d94e27
+- name: github.com/Microsoft/go-winio
+  version: 97e4973ce50b2ff5f09635a57e2b88a037aae829
+- name: github.com/moul/http2curl
+  version: 9ac6cf4d929b2fa8fd2d2e6dec5bb0feb4f4911d
+- name: github.com/opencontainers/go-digest
+  version: c9281466c8b2f606084ac71339773efd177436e7
+- name: github.com/parnurzeal/gorequest
+  version: a578a48e8d6ca8b01a3b18314c43c6716bb5f5a3
+- name: github.com/pkg/errors
+  version: c059e472caf75dbe73903f6521a20abac245b17f
+- name: github.com/Sirupsen/logrus
+  version: d23a0f20d429b5da960216daca3b37e075cbdcd1
+- name: golang.org/x/crypto
+  version: 0e37d006457bf46f9e6692014ba72ef82c33022c
+  subpackages:
+  - ssh/terminal
+- name: golang.org/x/net
+  version: 26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2
+  subpackages:
+  - context
+  - context/ctxhttp
+  - internal/socks
+  - proxy
+  - publicsuffix
+- name: golang.org/x/sys
+  version: d0be0721c37eeb5299f245a996a483160fc36940
+  subpackages:
+  - unix
+  - windows
+- name: gopkg.in/alecthomas/kingpin.v2
+  version: 947dcec5ba9c011838740e680966fd7087a71d0d
+- name: gopkg.in/yaml.v2
+  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
+testImports: []
