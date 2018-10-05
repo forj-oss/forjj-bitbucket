@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-// Return ok if the jenkins instance exist
+//CheckSourceExistence Return ok if the jenkins instance exist
 func (r *MaintainReq) CheckSourceExistence(ret *goforjj.PluginData) (status bool) {
 	log.Print("Checking bitbucket source code path existence.")
 

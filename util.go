@@ -8,6 +8,7 @@ import(
 	"golang.org/x/sys/unix"
 )
 
+//verifyReqFails ...
 func (bbs *BitbucketPlugin) verifyReqFails(ret *goforjj.PluginData, check map[string]bool) bool{
 	if v, ok := check["source"]; ok && v {
 		if reqCheckPath("source (forjj-source-mount)", bbs.sourcePath, ret){
@@ -32,7 +33,7 @@ func (bbs *BitbucketPlugin) verifyReqFails(ret *goforjj.PluginData, check map[st
 	return false
 }
 
-// check path is writable.
+//reqCheckPath check path is writable.
 // return false if something is wrong.
 func reqCheckPath(name, path string, ret *goforjj.PluginData) bool {
 
@@ -54,7 +55,7 @@ func reqCheckPath(name, path string, ret *goforjj.PluginData) bool {
 	return false
 }
 
-// Linux support only
+//IsWritable Linux support only
 func IsWritable(path string) (res bool) {
 	return unix.Access(path, unix.W_OK) == nil
 }

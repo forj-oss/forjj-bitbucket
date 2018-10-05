@@ -32,6 +32,7 @@ func (bbs *BitbucketPlugin) bitbucketConnect(server string, ret *goforjj.PluginD
 	return bbs.Client
 }
 
+//InitTeam ...
 func (req *CreateReq) InitTeam(bbs *BitbucketPlugin) (ret bool) {
 	if app, found := req.Objects.App[req.Forj.ForjjInstanceName]; found{
 		bbs.SetTeam(app)
@@ -40,6 +41,7 @@ func (req *CreateReq) InitTeam(bbs *BitbucketPlugin) (ret bool) {
 	return
 }
 
+//SetTeam ...
 func (bbs *BitbucketPlugin) SetTeam(fromApp AppInstanceStruct) {
 	if team := fromApp.Team; team == ""{
 		bbs.bitbucketDeploy.Team =fromApp.ForjjTeam
@@ -54,12 +56,13 @@ func (bbs *BitbucketPlugin) SetTeam(fromApp AppInstanceStruct) {
 	bbs.bitbucketSource.ProdTeam = bbs.bitbucketDeploy.ProdTeam
 }
 
+//ensureTeamExists 
 func (bbs *BitbucketPlugin) ensureTeamExists(ret *goforjj.PluginData) (s bool){
 	//TODO
 	return																   
 }
 
-//TODO
+//IsNewForge TODO
 func (bbs *BitbucketPlugin) IsNewForge(ret *goforjj.PluginData) (_ bool){
 	c := bbs.Client.Repositories
 
@@ -89,6 +92,7 @@ func (bbs *BitbucketPlugin) IsNewForge(ret *goforjj.PluginData) (_ bool){
 	return
 }
 
+//bitbucketSetUrl TODO
 func (bbs *BitbucketPlugin) bitbucketSetUrl(server string) (err error) {
 	bbUrl := ""
 
@@ -127,10 +131,12 @@ func (bbs *BitbucketPlugin) bitbucketSetUrl(server string) (err error) {
 	return
 }
 
+//ensureExists TODO
 func ensureExists () {
 	//TODO
 }
 
+//reposExists TODO
 func (bbs *BitbucketPlugin) reposExists(ret *goforjj.PluginData) (err error) {
 	clientRepos := bbs.Client.Repositories //Repos
 	//client, err := bbs.Client.User.Profile() //Get current user profile

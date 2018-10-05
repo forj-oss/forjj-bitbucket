@@ -10,7 +10,7 @@ import (
 	"path"
 )
 
-// 
+//CheckSourceExistence ...
 func (r *UpdateReq) CheckSourceExistence(ret *goforjj.PluginData) (p *BitbucketPlugin, status bool) {
 	log.Print("Checking Bitbucket source code existence.")
 	srcPath := path.Join(r.Forj.ForjjSourceMount, r.Forj.ForjjInstanceName)
@@ -25,7 +25,7 @@ func (r *UpdateReq) CheckSourceExistence(ret *goforjj.PluginData) (p *BitbucketP
 	return p, true
 }
 
-// Function which adds maintain options as part of the plugin answer in create/update phase.
+//SaveMaintainOptions function which adds maintain options as part of the plugin answer in create/update phase.
 // forjj won't add any driver name because 'maintain' phase read the list of drivers to use from forjj-maintain.yml
 // So --git-us is not available for forjj maintain.
 func (r *UpdateArgReq) SaveMaintainOptions(ret *goforjj.PluginData) {
@@ -51,7 +51,8 @@ func addMaintainOptionValue(options map[string]goforjj.PluginOption, option, val
 	return opt
 }
 
-func (bbs *BitbucketPlugin) SetRepo(repo *RepoInstanceStruct, isInfra, isDeployable bool) { //SetRepo
+//SetRepo TODO
+func (bbs *BitbucketPlugin) SetRepo(repo *RepoInstanceStruct, isInfra, isDeployable bool) {
 	upstream := bbs.DefineRepoUrls(repo.Name)
 
 	owner := bbs.bitbucketDeploy.Team

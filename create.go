@@ -11,7 +11,7 @@ import (
 	"fmt"
 )
 
-// return true if instance doesn't exist.
+//CheckSourceExistence return true if instance doesn't exist.
 func (r *CreateReq) CheckSourceExistence(ret *goforjj.PluginData) (p *BitbucketPlugin, status bool) {
 	log.Print("Checking Bitbucket source code existence.")
 	srcPath := path.Join(r.Forj.ForjjSourceMount, r.Forj.ForjjInstanceName)
@@ -26,12 +26,14 @@ func (r *CreateReq) CheckSourceExistence(ret *goforjj.PluginData) (p *BitbucketP
 	return p, true
 }
 
+//SaveMaintainOptions ...
 func (r *CreateArgReq) SaveMaintainOptions(ret *goforjj.PluginData) {
 	if ret.Options == nil {
 		ret.Options = make(map[string]goforjj.PluginOption)
 	}
 }
 
+//createYamlData ...
 func (bbs *BitbucketPlugin) createYamlData(req *CreateReq, ret *goforjj.PluginData) error{
 	if bbs.bitbucketSource.Urls == nil{
 		return fmt.Errorf("Internal Error. Urls was not set")
