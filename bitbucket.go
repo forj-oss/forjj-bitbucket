@@ -59,8 +59,33 @@ func (bbs *BitbucketPlugin) ensureTeamExists(ret *goforjj.PluginData) (s bool){
 	return																   
 }
 
+//TODO
 func (bbs *BitbucketPlugin) IsNewForge(ret *goforjj.PluginData) (_ bool){
-	//TODO
+	c := bbs.Client.Repositories
+
+	//loop on list of repos, and ensure they exist with minimal config and rights
+	for name, repo := range bbs.bitbucketDeploy.Repos{
+		if !repo.Infra {
+			continue
+		}
+
+		//Get username
+		userProfil, _ := bbs.Client.User.Profile() //!\\
+		jsonMap := userProfil.(map[string]interface{})
+		//Repository Options
+		ro := &bitbucket.RepositoryOptions{
+			Owner: jsonMap["username"].(string),
+			RepoSlug: name,
+		}
+		if resp, e := c.Repository.Get(ro); e != nil && resp == nil {
+			ret.Errorf("Unable to identify the infra repository. Unknown issue: %s", e)
+		} else {
+			//bbs.newForge = (resp.StatusCode != 200) TODO
+		}
+		return true
+	}
+
+	ret.Errorf("Unable to identify the infra repository. At least, one repo must be identified with"+"`%s` in %s. You can use Forjj update to fix this.", "Infra: true", "bitbucket")
 	return
 }
 

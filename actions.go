@@ -176,9 +176,9 @@ func DoMaintain(r *http.Request, req *MaintainReq, ret *goforjj.PluginData) (htt
 		return
 	}
 
-	if !bbs.ensureTeamExists(ret){
+	/*if !bbs.ensureTeamExists(ret){ TODO
 		return
-	}
+	}*/
 
 	if !bbs.IsNewForge(ret){
 		return
