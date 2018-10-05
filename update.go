@@ -10,24 +10,20 @@ import (
 	"path"
 )
 
-// Return ok if the jenkins instance exist
-func (r *UpdateReq) check_source_existence(ret *goforjj.PluginData) (p *BitbucketPlugin, status bool) {
+// 
+func (r *UpdateReq) CheckSourceExistence(ret *goforjj.PluginData) (p *BitbucketPlugin, status bool) {
 	log.Print("Checking Bitbucket source code existence.")
-	src_path := path.Join(r.Forj.ForjjSourceMount, r.Forj.ForjjInstanceName)
-	if _, err := os.Stat(path.Join(src_path, bitbucket_file)); err == nil {
-		log.Printf(ret.Errorf("Unable to create the bitbucket source code for instance name '%s' which already exist.\nUse update to update it (or update %s), and maintain to update bitbucket according to his configuration. %s.", src_path, src_path, err))
+	srcPath := path.Join(r.Forj.ForjjSourceMount, r.Forj.ForjjInstanceName)
+	if _, err := os.Stat(path.Join(srcPath, bitbucketFile)); err == nil {
+		log.Printf(ret.Errorf("Unable to create the bitbucket source code for instance name '%s' which already exist.\nUse update to update it (or update %s), and maintain to update bitbucket according to his configuration. %s.", srcPath, srcPath, err))
 		return
 	}
 
-	p = new_plugin(src_path)
+	p = new_plugin(srcPath)
 
 	ret.StatusAdd("environment checked.")
 	return p, true
 }
-
-/*func (r *BitbucketPlugin) update_jenkins_sources(ret *goforjj.PluginData) (status bool) {
-	return true
-}*/
 
 // Function which adds maintain options as part of the plugin answer in create/update phase.
 // forjj won't add any driver name because 'maintain' phase read the list of drivers to use from forjj-maintain.yml
@@ -56,15 +52,19 @@ func addMaintainOptionValue(options map[string]goforjj.PluginOption, option, val
 }
 
 func (bbs *BitbucketPlugin) SetRepo(repo *RepoInstanceStruct, isInfra, isDeployable bool) { //SetRepo
-	/*upstream := bbs.DefineRepoUrls(repo.Name)
+	upstream := bbs.DefineRepoUrls(repo.Name)
 
 	owner := bbs.bitbucketDeploy.Team
 	if isInfra {
 		owner = bbs.bitbucketDeploy.ProdTeam
-	}*/
+	}
 
 	//set it, found or not
-	r := RepositoryStruct{}
-	r.set(repo)
-	bbs.bitbucketDeploy.Repos[repo.Name] = r
+	pjt := RepositoryStruct{}
+	pjt.set(repo,
+				map[string]goforjj.PluginRepoRemoteUrl{"origin": upstream},
+				map[string]string{"master": "origin/master"},
+				isInfra,
+				isDeployable, owner)
+	bbs.bitbucketDeploy.Repos[repo.Name] = pjt
 }

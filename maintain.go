@@ -10,7 +10,7 @@ import (
 )
 
 // Return ok if the jenkins instance exist
-func (r *MaintainReq) check_source_existence(ret *goforjj.PluginData) (status bool) {
+func (r *MaintainReq) CheckSourceExistence(ret *goforjj.PluginData) (status bool) {
 	log.Print("Checking bitbucket source code path existence.")
 
 	if _, err := os.Stat(r.Forj.ForjjSourceMount); err == nil {

@@ -12,15 +12,15 @@ import (
 )
 
 // return true if instance doesn't exist.
-func (r *CreateReq) check_source_existence(ret *goforjj.PluginData) (p *BitbucketPlugin, status bool) {
+func (r *CreateReq) CheckSourceExistence(ret *goforjj.PluginData) (p *BitbucketPlugin, status bool) {
 	log.Print("Checking Bitbucket source code existence.")
-	src_path := path.Join(r.Forj.ForjjSourceMount, r.Forj.ForjjInstanceName)
-	if _, err := os.Stat(path.Join(src_path, bitbucket_file)); err == nil {
-		log.Printf(ret.Errorf("Unable to create the bitbucket source code for instance name '%s' which already exist.\nUse update to update it (or update %s), and maintain to update bitbucket according to his configuration. %s.", src_path, src_path, err))
+	srcPath := path.Join(r.Forj.ForjjSourceMount, r.Forj.ForjjInstanceName)
+	if _, err := os.Stat(path.Join(srcPath, bitbucketFile)); err == nil {
+		log.Printf(ret.Errorf("Unable to create the bitbucket source code for instance name '%s' which already exist.\nUse update to update it (or update %s), and maintain to update bitbucket according to his configuration. %s.", srcPath, srcPath, err))
 		return
 	}
 
-	p = new_plugin(src_path)
+	p = new_plugin(srcPath)
 
 	log.Printf(ret.StatusAdd("environment checked."))
 	return p, true
@@ -32,8 +32,8 @@ func (r *CreateArgReq) SaveMaintainOptions(ret *goforjj.PluginData) {
 	}
 }
 
-func (bbs *BitbucketPlugin) create_yaml_data(req *CreateReq, ret *goforjj.PluginData) error{
-	if bbs.bitbucket_source.Urls == nil{
+func (bbs *BitbucketPlugin) createYamlData(req *CreateReq, ret *goforjj.PluginData) error{
+	if bbs.bitbucketSource.Urls == nil{
 		return fmt.Errorf("Internal Error. Urls was not set")
 	}
 
@@ -49,15 +49,15 @@ func (bbs *BitbucketPlugin) create_yaml_data(req *CreateReq, ret *goforjj.Plugin
 	//SetOrgHooks
 
 	for name, repo := range req.Objects.Repo{
-		is_infra := (name == bbs.app.ForjjInfra)
-		if bbs.bitbucketDeploy.NoRepos && !is_infra {
+		isInfra := (name == bbs.app.ForjjInfra)
+		if bbs.bitbucketDeploy.NoRepos && !isInfra {
 			continue
 		}
 		if !repo.IsValid(name, ret){
 			ret.StatusAdd("Warning!!! Invalid repo '%s' requested. Ignored.")
 			continue
 		}
-		bbs.SetRepo(&repo, is_infra, repo.Deployable == "true")
+		bbs.SetRepo(&repo, isInfra, repo.Deployable == "true")
 		//bbs.SetHooks(...)
 
 	}
@@ -72,8 +72,8 @@ func (bbs *BitbucketPlugin) create_yaml_data(req *CreateReq, ret *goforjj.Plugin
 // DefineRepoUrls return default repo url for the repo name given
 func (bbs *BitbucketPlugin) DefineRepoUrls(name string) (upstream goforjj.PluginRepoRemoteUrl){
 	upstream = goforjj.PluginRepoRemoteUrl{
-		Ssh: bbs.bitbucket_source.Urls["bitbucket-ssh"] + bbs.bitbucketDeploy.Team + "/" + name + ".git",
-		Url: bbs.bitbucket_source.Urls["bitbucket-url"] + "/" + bbs.bitbucketDeploy.Team + "/" + name,
+		Ssh: bbs.bitbucketSource.Urls["bitbucket-ssh"] + bbs.bitbucketDeploy.Team + "/" + name + ".git",
+		Url: bbs.bitbucketSource.Urls["bitbucket-url"] + "/" + bbs.bitbucketDeploy.Team + "/" + name,
 	}
 	return
 }

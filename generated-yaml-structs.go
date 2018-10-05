@@ -137,6 +137,8 @@ type MaintainReq struct {
 	Forj struct {
 		ForjCommonStruct
 		DeployTo string `json:"deploy-to"`
+		Force string `json:"force"`
+		ForjjWorkspaceMount string `json:"forjj-workspace-mount"`
 	}
 
 	Objects MaintainArgReq
@@ -180,6 +182,10 @@ const YamlDesc = "---\n" +
    "  maintain:\n" +
    "    deploy-to:\n" +
    "      default: docker\n" +
+   "    forjj-workspace-mount:\n" +
+   "      help: \"Where the workspace dir is located in the bitbucket plugin container\"\n" +
+   "    force:\n" +
+   "      help: Set 'true' to force removal of teams/users when forjj creates a new forge.\n" +
    "objects: # All objects will be delivered by forjj except workspace/infra under objects/<type>/<instance>/<action>/key=value\n" +
    "  # Define infra object special flag for github\n" +
    "  app: # already defined by Forjj\n" +

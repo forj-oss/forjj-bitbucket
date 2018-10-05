@@ -8,13 +8,12 @@ import (
 	"github.com/ktrysmt/go-bitbucket"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"path"
 	"fmt"
 )
 
 type BitbucketPlugin struct {
 	yaml        YamlBitbucket
-	source_path string
+	sourcePath string
 
 	//sourceMount 	string
 	deployMount 	string
@@ -26,15 +25,37 @@ type BitbucketPlugin struct {
 
 	app 			*AppInstanceStruct  	//permet l'accès au forjfile
 	Client 			*bitbucket.Client 			//client bitbucket cf api bitbucket 
-	bitbucket_source 	BitbucketSourceStruct 		//urls...
+	bitbucketSource 	BitbucketSourceStruct 		//urls...
 	bitbucketDeploy 	BitbucketDeployStruct     	//
 
 	gitFile 		string
 	deployFile 		string
 	sourceFile  	string
+
+	//maintain
+	workspaceMount		string
+	maintainCtxt		bool
+	force			bool
+
+	newForge		bool
 }
 
-const bitbucket_file = "forjj-bitbucket.yaml"
+type BitbucketDeployStruct struct{
+	goforjj.PluginService 	`yaml:",inline"` //urls
+	Repos 					map[string]RepositoryStruct // projects managed in gitlab
+	NoRepos 				bool `yaml:",omitempty"`
+	ProdTeam 				string
+	Team 					string
+	TeamDisplayName 		string
+	//...
+}
+
+type BitbucketSourceStruct struct{
+	goforjj.PluginService `,inline` //base url
+	ProdTeam string `yaml:"production-team-name"`//`yaml:"production-group-name, omitempty"`
+}
+
+const bitbucketFile = "forjj-bitbucket.yaml"
 
 type YamlBitbucket struct {
 }
@@ -42,7 +63,7 @@ type YamlBitbucket struct {
 func new_plugin(src string) (p *BitbucketPlugin) {
 	p = new(BitbucketPlugin)
 
-	p.source_path = src
+	p.sourcePath = src
 	return
 }
 
@@ -58,16 +79,16 @@ func (p *BitbucketPlugin) update_from(r *UpdateReq, ret *goforjj.PluginData) (st
 	return true
 }
 
-func (p *BitbucketPlugin) save_yaml(in interface{}, file string) (Updated bool, _ error){
+func (p *BitbucketPlugin) saveYaml(in interface{}, file string) (Updated bool, _ error){
 	d, err := yaml.Marshal(in)
 	if err != nil {
 		return false, fmt.Errorf("Unable to encode bitbucket data in yaml. %s", err)
 	}
 
-	if d_before, err := ioutil.ReadFile(file); err != nil{
+	if dBefore, err := ioutil.ReadFile(file); err != nil{
 		Updated = true
 	} else {
-		Updated = (string(d) != string(d_before))
+		Updated = (string(d) != string(dBefore))
 	}
 	
 	if !Updated {
@@ -79,19 +100,17 @@ func (p *BitbucketPlugin) save_yaml(in interface{}, file string) (Updated bool, 
 	return
 }
 
-func (p *BitbucketPlugin) load_yaml(ret *goforjj.PluginData, instance string) (status bool) {
-	file := path.Join(instance, bitbucket_file)
-
+func (p *BitbucketPlugin) loadYaml(file string) error {
 	d, err := ioutil.ReadFile(file)
 	if err != nil {
-		ret.Errorf("Unable to load '%s'. %s", file, err)
-		return
+		return fmt.Errorf("Unable to load '%s'. %s", file, err)
 	}
 
-	err = yaml.Unmarshal(d, &p.yaml)
+	err = yaml.Unmarshal(d, &p.bitbucketDeploy)
+
 	if err != nil {
-		ret.Errorf("Unable to decode forjj bitbucket data in yaml. %s", err)
-		return
+		return fmt.Errorf("Unable to decode bitbucket data in yaml. %s", err)
 	}
-	return true
+
+	return nil
 }
