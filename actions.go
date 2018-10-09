@@ -198,9 +198,9 @@ func DoMaintain(r *http.Request, req *MaintainReq, ret *goforjj.PluginData) (htt
 			log.Printf(ret.StatusAdd("Project ignored: %s - Infra project owned by '%s'", name, bbs.bitbucketDeploy.ProdTeam))
 			continue
 		}
-		/*if err := repoData.ensureExists(&bbs, ret); err != nil{
+		if err := repoData.ensureExists(&bbs, ret); err != nil{
 			return
-		}*/
+		}
 		//...
 		log.Printf(ret.StatusAdd("Project maintained: %s", name))
 	}

@@ -39,13 +39,30 @@ func (r *RepoInstanceStruct) IsValid(repoName string, ret *goforjj.PluginData) (
 	return
 }
 
-//set
+//set TODO
 func (r *RepositoryStruct) set(repo *RepoInstanceStruct, remotes map[string]goforjj.PluginRepoRemoteUrl, branchConnect map[string]string, isInfra, IsDeployable bool, owner string) *RepositoryStruct{
 	if r == nil {
 		r = new(RepositoryStruct)
 	}
 	r.Name = repo.Name
-	return r
+	r.Description = repo.Title
 
-	//TODO
+	//issueTracker
+
+	r.Flow = repo.Flow
+	r.Infra = isInfra
+
+	//addUsers
+	//Groups
+
+	r.remotes = remotes
+	r.branchConnect = branchConnect
+
+	//webHooks
+
+	r.Role = repo.Role
+	r.Owner = owner
+	r.IsDeployable = IsDeployable
+
+	return r
 }

@@ -15,7 +15,6 @@ type BitbucketPlugin struct {
 	yaml        YamlBitbucket
 	sourcePath string
 
-	//sourceMount 	string
 	deployMount 	string
 	instance 		string
 	deployTo 		string
