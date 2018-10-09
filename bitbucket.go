@@ -67,7 +67,7 @@ func (bbs *BitbucketPlugin) IsNewForge(ret *goforjj.PluginData) (_ bool){
 	c := bbs.Client.Repositories
 
 	//loop on list of repos, and ensure they exist with minimal config and rights
-	for name, repo := range bbs.bitbucketDeploy.Repos{
+	for _, repo := range bbs.bitbucketDeploy.Repos{
 		if !repo.Infra {
 			continue
 		}
@@ -78,9 +78,10 @@ func (bbs *BitbucketPlugin) IsNewForge(ret *goforjj.PluginData) (_ bool){
 		//Repository Options
 		ro := &bitbucket.RepositoryOptions{
 			Owner: jsonMap["username"].(string),
-			RepoSlug: name,
+			RepoSlug: "name",
 		}
-		if resp, e := c.Repository.Get(ro); e != nil && resp == nil {
+		
+		if _, e := c.Repository.Get(ro); e == nil {
 			ret.Errorf("Unable to identify the infra repository. Unknown issue: %s", e)
 		} else {
 			//bbs.newForge = (resp.StatusCode != 200) TODO
@@ -124,16 +125,46 @@ func (bbs *BitbucketPlugin) bitbucketSetUrl(server string) (err error) {
 
 	//err = bbs.Client.SetBaseURL(bbUrl) TODO SETBASEURL
 	
-	if err != nil{
+	/*if err != nil{
 		return
-	}
+	}*/
 
 	return
 }
 
 //ensureExists TODO
-func ensureExists () {
-	//TODO
+func (r *RepositoryStruct) ensureExists(bbs *BitbucketPlugin, ret *goforjj.PluginData) error {
+	//test existence
+	clientRepos := bbs.Client.Repositories
+	userProfil, err := bbs.Client.User.Profile()
+	if err != nil {
+		ret.Errorf("Unable to identify owner.")
+		return err
+	}
+	user := userProfil.(map[string]interface{})
+
+	RepoOptions := &bitbucket.RepositoryOptions{
+		Owner: user["username"].(string),
+		RepoSlug: r.Name,
+	}
+
+	_, e := clientRepos.Repository.Get(RepoOptions)
+
+	if e != nil {
+		//Create
+		_, er := clientRepos.Repository.Create(RepoOptions)
+		if er != nil {
+			ret.Errorf("Unable to create '%s'. %s.", r.Name, er)
+			return er
+		}
+		log.Printf(ret.StatusAdd("Repo '%s': created", r.Name))
+	} else {
+		//Update TODO
+	}
+
+	//...
+
+	return nil
 }
 
 //reposExists TODO
