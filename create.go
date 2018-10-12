@@ -4,11 +4,12 @@
 package main
 
 import (
-	"github.com/forj-oss/goforjj"
+	"fmt"
 	"log"
 	"os"
 	"path"
-	"fmt"
+
+	"github.com/forj-oss/goforjj"
 )
 
 //CheckSourceExistence return true if instance doesn't exist.
@@ -34,8 +35,8 @@ func (r *CreateArgReq) SaveMaintainOptions(ret *goforjj.PluginData) {
 }
 
 //createYamlData ...
-func (bbs *BitbucketPlugin) createYamlData(req *CreateReq, ret *goforjj.PluginData) error{
-	if bbs.bitbucketSource.Urls == nil{
+func (bbs *BitbucketPlugin) createYamlData(req *CreateReq, ret *goforjj.PluginData) error {
+	if bbs.bitbucketSource.Urls == nil {
 		return fmt.Errorf("Internal Error. Urls was not set")
 	}
 
@@ -48,19 +49,20 @@ func (bbs *BitbucketPlugin) createYamlData(req *CreateReq, ret *goforjj.PluginDa
 		log.Print("Repositories_disabled is true. forjj_gitlab won't manage repositories except the infra repository.")
 	}
 
-	//SetOrgHooks
+	//SetTeamHooks
+	bbs.setTeamHooks(bbs.app.TeamWebhooksDisabled, bbs.app.ReposWebhooksDisabled, bbs.app.TeamHookPolicy, req.Objects.Webhooks)
 
-	for name, repo := range req.Objects.Repo{
+	for name, repo := range req.Objects.Repo {
 		isInfra := (name == bbs.app.ForjjInfra)
 		if bbs.bitbucketDeploy.NoRepos && !isInfra {
 			continue
 		}
-		if !repo.IsValid(name, ret){
+		if !repo.IsValid(name, ret) {
 			ret.StatusAdd("Warning!!! Invalid repo '%s' requested. Ignored.")
 			continue
 		}
 		bbs.SetRepo(&repo, isInfra, repo.Deployable == "true")
-		//bbs.SetHooks(...)
+		bbs.SetHooks(&repo, req.Objects.Webhooks)
 
 	}
 
@@ -72,7 +74,7 @@ func (bbs *BitbucketPlugin) createYamlData(req *CreateReq, ret *goforjj.PluginDa
 }
 
 // DefineRepoUrls return default repo url for the repo name given
-func (bbs *BitbucketPlugin) DefineRepoUrls(name string) (upstream goforjj.PluginRepoRemoteUrl){
+func (bbs *BitbucketPlugin) DefineRepoUrls(name string) (upstream goforjj.PluginRepoRemoteUrl) {
 	upstream = goforjj.PluginRepoRemoteUrl{
 		Ssh: bbs.bitbucketSource.Urls["bitbucket-ssh"] + bbs.bitbucketDeploy.Team + "/" + name + ".git",
 		Url: bbs.bitbucketSource.Urls["bitbucket-url"] + "/" + bbs.bitbucketDeploy.Team + "/" + name,

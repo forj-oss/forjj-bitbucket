@@ -1,27 +1,29 @@
 package main
 
-import(
-	"os"
+import (
 	"fmt"
-	"path"
 	"log"
+	"os"
+	"path"
+	"strconv"
+	"strings"
 
 	"github.com/forj-oss/goforjj"
 	"github.com/ktrysmt/go-bitbucket"
 )
 
-func (bbs *BitbucketPlugin) bitbucketConnect(server string, ret *goforjj.PluginData) *bitbucket.Client{
+func (bbs *BitbucketPlugin) bitbucketConnect(server string, ret *goforjj.PluginData) *bitbucket.Client {
 	//connexion
 	bbs.Client = bitbucket.NewOAuthClientCredentials(bbs.key, bbs.secret)
 
 	//Set url
-	if err := bbs.bitbucketSetUrl(server); err != nil{
+	if err := bbs.bitbucketSetUrl(server); err != nil {
 		ret.Errorf("Invalid url. %s", err)
 		return nil
 	}
 
 	//verif
-    userProfil, err := bbs.Client.User.Profile()
+	userProfil, err := bbs.Client.User.Profile()
 	_ = userProfil
 	if err != nil {
 		ret.Errorf("Unable to get owner of given token. %s", err)
@@ -34,7 +36,7 @@ func (bbs *BitbucketPlugin) bitbucketConnect(server string, ret *goforjj.PluginD
 
 //InitTeam ...
 func (req *CreateReq) InitTeam(bbs *BitbucketPlugin) (ret bool) {
-	if app, found := req.Objects.App[req.Forj.ForjjInstanceName]; found{
+	if app, found := req.Objects.App[req.Forj.ForjjInstanceName]; found {
 		bbs.SetTeam(app)
 		ret = true
 	}
@@ -43,12 +45,12 @@ func (req *CreateReq) InitTeam(bbs *BitbucketPlugin) (ret bool) {
 
 //SetTeam ...
 func (bbs *BitbucketPlugin) SetTeam(fromApp AppInstanceStruct) {
-	if team := fromApp.Team; team == ""{
-		bbs.bitbucketDeploy.Team =fromApp.ForjjTeam
+	if team := fromApp.Team; team == "" {
+		bbs.bitbucketDeploy.Team = fromApp.ForjjTeam
 	} else {
 		bbs.bitbucketDeploy.Team = team
 	}
-	if team := fromApp.ProductionTeam; team == ""{
+	if team := fromApp.ProductionTeam; team == "" {
 		bbs.bitbucketDeploy.ProdTeam = fromApp.ForjjTeam
 	} else {
 		bbs.bitbucketDeploy.ProdTeam = team
@@ -56,18 +58,18 @@ func (bbs *BitbucketPlugin) SetTeam(fromApp AppInstanceStruct) {
 	bbs.bitbucketSource.ProdTeam = bbs.bitbucketDeploy.ProdTeam
 }
 
-//ensureTeamExists 
-func (bbs *BitbucketPlugin) ensureTeamExists(ret *goforjj.PluginData) (s bool){
+//ensureTeamExists
+func (bbs *BitbucketPlugin) ensureTeamExists(ret *goforjj.PluginData) (s bool) {
 	//TODO
-	return																   
+	return
 }
 
 //IsNewForge TODO
-func (bbs *BitbucketPlugin) IsNewForge(ret *goforjj.PluginData) (_ bool){
+func (bbs *BitbucketPlugin) IsNewForge(ret *goforjj.PluginData) (_ bool) {
 	c := bbs.Client.Repositories
 
 	//loop on list of repos, and ensure they exist with minimal config and rights
-	for _, repo := range bbs.bitbucketDeploy.Repos{
+	for _, repo := range bbs.bitbucketDeploy.Repos {
 		if !repo.Infra {
 			continue
 		}
@@ -77,10 +79,10 @@ func (bbs *BitbucketPlugin) IsNewForge(ret *goforjj.PluginData) (_ bool){
 		jsonMap := userProfil.(map[string]interface{})
 		//Repository Options
 		ro := &bitbucket.RepositoryOptions{
-			Owner: jsonMap["username"].(string),
+			Owner:    jsonMap["username"].(string),
 			RepoSlug: "name",
 		}
-		
+
 		if _, e := c.Repository.Get(ro); e == nil {
 			ret.Errorf("Unable to identify the infra repository. Unknown issue: %s", e)
 		} else {
@@ -102,7 +104,7 @@ func (bbs *BitbucketPlugin) bitbucketSetUrl(server string) (err error) {
 	}
 
 	if !bbs.maintainCtxt {
-		if server == "" { // || ? 
+		if server == "" { // || ?
 			bbs.bitbucketSource.Urls["bitbucket-base-url"] = "https://bitbucket.com/"
 			bbs.bitbucketSource.Urls["bitbucket-url"] = "https://bitbucket.com"
 			bbs.bitbucketSource.Urls["bitbucket-ssh"] = "git@bitbucket.com:"
@@ -119,12 +121,12 @@ func (bbs *BitbucketPlugin) bitbucketSetUrl(server string) (err error) {
 		bbUrl = bbs.bitbucketSource.Urls["bitbucket-base-url"]
 	}
 
-	if bbUrl == ""{
+	if bbUrl == "" {
 		return
 	}
 
 	//err = bbs.Client.SetBaseURL(bbUrl) TODO SETBASEURL
-	
+
 	/*if err != nil{
 		return
 	}*/
@@ -144,7 +146,7 @@ func (r *RepositoryStruct) ensureExists(bbs *BitbucketPlugin, ret *goforjj.Plugi
 	user := userProfil.(map[string]interface{})
 
 	RepoOptions := &bitbucket.RepositoryOptions{
-		Owner: user["username"].(string),
+		Owner:    user["username"].(string),
 		RepoSlug: r.Name,
 	}
 
@@ -171,33 +173,33 @@ func (r *RepositoryStruct) ensureExists(bbs *BitbucketPlugin, ret *goforjj.Plugi
 func (bbs *BitbucketPlugin) reposExists(ret *goforjj.PluginData) (err error) {
 	clientRepos := bbs.Client.Repositories //Repos
 	//client, err := bbs.Client.User.Profile() //Get current user profile
-	
+
 	//loop
-	for name, repoData := range bbs.bitbucketDeploy.Repos{
+	for name, repoData := range bbs.bitbucketDeploy.Repos {
 
 		//
 		RepoOptions := &bitbucket.RepositoryOptions{
-	    	Owner: repoData.Owner,
-	    	RepoSlug: name,
-	    }
+			Owner:    repoData.Owner,
+			RepoSlug: name,
+		}
 
 		//on voit si on trouve le repo X sur bitbucket
-		if foundProject, e := clientRepos.Repository.Get(RepoOptions); e == nil{
+		if foundProject, e := clientRepos.Repository.Get(RepoOptions); e == nil {
 			//Si trouvé: err
 			if err == nil && name == bbs.app.ForjjInfra {
 				err = fmt.Errorf("Infra repo '%s' already exist in bitbucket server.", name)
 			}
 			repoData.exist = true
-			if repoData.remotes == nil{
+			if repoData.remotes == nil {
 				repoData.remotes = make(map[string]goforjj.PluginRepoRemoteUrl)
 				repoData.branchConnect = make(map[string]string)
 			}
 
 			//Get ssh and https remte
-			ssh := "";
-			url := "";
+			ssh := ""
+			url := ""
 			remotes := foundProject.Links["clone"].([]interface{})
-			if remotes[0].(map[string]interface{})["name"].(string) == "https"{
+			if remotes[0].(map[string]interface{})["name"].(string) == "https" {
 				url = remotes[0].(map[string]interface{})["href"].(string)
 				ssh = remotes[1].(map[string]interface{})["href"].(string)
 			} else {
@@ -212,10 +214,10 @@ func (bbs *BitbucketPlugin) reposExists(ret *goforjj.PluginData) (err error) {
 			repoData.branchConnect["master"] = "origin/master"
 		}
 		ret.Repos[name] = goforjj.PluginRepo{ //Project ?
-			Name: 		repoData.Name,
-			Exist: 		repoData.exist,
-			Remotes: 		repoData.remotes,
-			BranchConnect: 		repoData.branchConnect,
+			Name:          repoData.Name,
+			Exist:         repoData.exist,
+			Remotes:       repoData.remotes,
+			BranchConnect: repoData.branchConnect,
 			//Owner: 		repoData.Owner,
 		}
 
@@ -224,7 +226,7 @@ func (bbs *BitbucketPlugin) reposExists(ret *goforjj.PluginData) (err error) {
 	return
 }
 
-func (bbs *BitbucketPlugin) checkSourcesExistence(when string) (err error){
+func (bbs *BitbucketPlugin) checkSourcesExistence(when string) (err error) {
 	log.Print("Checking Infrastructure code existence.")
 	sourceRepo := bbs.sourcePath
 	sourcePath := path.Join(sourceRepo, bbs.instance)
@@ -238,30 +240,87 @@ func (bbs *BitbucketPlugin) checkSourcesExistence(when string) (err error){
 	bbs.gitFile = path.Join(bbs.instance, bitbucketFile)
 
 	switch when {
-		case "create":
-			if _, err := os.Stat(sourcePath); err != nil{
-				if err = os.MkdirAll(sourcePath, 0755); err != nil{
-					return fmt.Errorf("Unable to create '%s'. %s", sourcePath, err)
-				}
+	case "create":
+		if _, err := os.Stat(sourcePath); err != nil {
+			if err = os.MkdirAll(sourcePath, 0755); err != nil {
+				return fmt.Errorf("Unable to create '%s'. %s", sourcePath, err)
 			}
+		}
 
-			if _, err := os.Stat(deployRepo); err != nil{
-				return fmt.Errorf("Unable to create '%s'. Forjj must create it. %s", deployRepo, err)
-			}
+		if _, err := os.Stat(deployRepo); err != nil {
+			return fmt.Errorf("Unable to create '%s'. Forjj must create it. %s", deployRepo, err)
+		}
 
-			if _, err := os.Stat(bbs.sourceFile); err == nil{
-				return fmt.Errorf("Unable to create the bitbucket configuration which already exist.\nUse 'update' to update it "+"(or update %s), and 'maintain' to update your github service according to his configuration.",path.Join(bbs.instance, bitbucketFile))
-			}
+		if _, err := os.Stat(bbs.sourceFile); err == nil {
+			return fmt.Errorf("Unable to create the bitbucket configuration which already exist.\nUse 'update' to update it "+"(or update %s), and 'maintain' to update your github service according to his configuration.", path.Join(bbs.instance, bitbucketFile))
+		}
 
-			if _, err := os.Stat(deployBase); err != nil{
-				if err = os.Mkdir(deployBase, 0755); err != nil{
-					return fmt.Errorf("Unable to create '%s'. %s", deployBase, err)
-				}
+		if _, err := os.Stat(deployBase); err != nil {
+			if err = os.Mkdir(deployBase, 0755); err != nil {
+				return fmt.Errorf("Unable to create '%s'. %s", deployBase, err)
 			}
-			return
-		
-		case "update":
-			log.Printf("TODO UPDATE")
+		}
+		return
+
+	case "update":
+		log.Printf("TODO UPDATE")
 	}
 	return
+}
+
+//setTeamHooks TODO
+func (bbs *BitbucketPlugin) setTeamHooks(teamHookDisabled, repoHookDisabled, whPolicy string, hooks map[string]WebhooksInstanceStruct) {
+	//
+	if b, err := strconv.ParseBool(teamHookDisabled); err != nil {
+		log.Printf("Team webhook disabled: invalid boolean: %s", teamHookDisabled)
+		bbs.bitbucketDeploy.NoTeamHook = true
+	} else {
+		bbs.bitbucketDeploy.NoTeamHook = b
+	}
+	if bbs.bitbucketDeploy.WebHooks == nil {
+		bbs.bitbucketDeploy.WebHooks = make(map[string]WebHookStruct)
+	}
+
+	if b, err := strconv.ParseBool(repoHookDisabled); err != nil {
+		log.Printf("Team webhook disabled: invalid boolean: %s", repoHookDisabled)
+	} else {
+		bbs.bitbucketDeploy.NoRepoHook = b
+	}
+
+	if v := inStringList(whPolicy, "manage", "sync"); v == "" || v == "sync" {
+		if whPolicy != "" {
+			log.Printf("Invalid value '%s' for 'WebhooksManagement'. Set it to 'sync'.", whPolicy)
+		} else {
+			log.Print("WebhooksManagement is set by default to 'sync'.")
+		}
+		bbs.bitbucketDeploy.WebHookPolicy = ""
+	} else {
+		bbs.bitbucketDeploy.WebHookPolicy = v
+	}
+
+	if bbs.bitbucketDeploy.NoTeamHook {
+		return
+	}
+
+	for name, hook := range hooks {
+		if hook.Team == "false" {
+			continue
+		}
+		data := WebHookStruct{
+			Url:     hook.Url,
+			Events:  strings.Split(hook.Events, ","),
+			Enabled: hook.Enabled,
+		}
+		if v, err := strconv.ParseBool(hook.SslCheck); err == nil {
+			data.SSLCheck = v
+			log.Printf("SSL Check '%s' => %t", name, v)
+		} else {
+			log.Printf("SSLCheck has an invalid boolean string representation '%s'. Ignore. SSL Check is set to true.", name)
+			data.SSLCheck = true
+		}
+		bbs.bitbucketDeploy.WebHooks[name] = data
+	}
+	if len(bbs.bitbucketDeploy.WebHooks) > 0 && bbs.bitbucketDeploy.WebHookPolicy == "sync" {
+		bbs.bitbucketDeploy.WebHookPolicy = ""
+	}
 }

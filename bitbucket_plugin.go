@@ -4,54 +4,53 @@
 package main
 
 import (
+	"fmt"
+	"io/ioutil"
+
 	"github.com/forj-oss/goforjj"
 	"github.com/ktrysmt/go-bitbucket"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
-	"fmt"
 )
 
 type BitbucketPlugin struct {
-	yaml        YamlBitbucket
-	sourcePath string
-
-	deployMount 	string
-	instance 		string
-	deployTo 		string
-	key 			string
-	secret 			string
-	team			string
-
-	app 			*AppInstanceStruct  	//permet l'accès au forjfile
-	Client 			*bitbucket.Client 			//client bitbucket cf api bitbucket 
-	bitbucketSource 	BitbucketSourceStruct 		//urls...
-	bitbucketDeploy 	BitbucketDeployStruct     	//
-
-	gitFile 		string
-	deployFile 		string
-	sourceFile  	string
-
-	//maintain
-	workspaceMount		string
-	maintainCtxt		bool
-	force			bool
-
-	newForge		bool
+	yaml            YamlBitbucket
+	sourcePath      string
+	deployMount     string
+	instance        string
+	deployTo        string
+	key             string
+	secret          string
+	team            string
+	app             *AppInstanceStruct    //permet l'accès au forjfile
+	Client          *bitbucket.Client     //client bitbucket cf api bitbucket
+	bitbucketSource BitbucketSourceStruct //urls...
+	bitbucketDeploy BitbucketDeployStruct //
+	gitFile         string
+	deployFile      string
+	sourceFile      string
+	workspaceMount  string //maintain ...
+	maintainCtxt    bool
+	force           bool
+	newForge        bool
 }
 
-type BitbucketDeployStruct struct{
-	goforjj.PluginService 	`yaml:",inline"` //urls
-	Repos 					map[string]RepositoryStruct // projects managed in gitlab
-	NoRepos 				bool `yaml:",omitempty"`
-	ProdTeam 				string
-	Team 					string
-	TeamDisplayName 		string
+type BitbucketDeployStruct struct {
+	goforjj.PluginService `yaml:",inline"`            //urls
+	Repos                 map[string]RepositoryStruct // projects managed in gitlab
+	NoRepos               bool                        `yaml:",omitempty"`
+	ProdTeam              string
+	Team                  string
+	TeamDisplayName       string
+	NoTeamHook            bool                     `yaml:",omitempty"`
+	WebHooks              map[string]WebHookStruct `yaml:",omitempty"`
+	NoRepoHook            bool                     `yaml:",omitempty"`
+	WebHookPolicy         string                   `yaml:",omitempty"`
 	//...
 }
 
-type BitbucketSourceStruct struct{
+type BitbucketSourceStruct struct {
 	goforjj.PluginService `,inline` //base url
-	ProdTeam string `yaml:"production-team-name"`//`yaml:"production-group-name, omitempty"`
+	ProdTeam              string    `yaml:"production-team-name"` //`yaml:"production-group-name, omitempty"`
 }
 
 const bitbucketFile = "forjj-bitbucket.yaml"
@@ -78,18 +77,18 @@ func (p *BitbucketPlugin) update_from(r *UpdateReq, ret *goforjj.PluginData) (st
 	return true
 }
 
-func (p *BitbucketPlugin) saveYaml(in interface{}, file string) (Updated bool, _ error){
+func (p *BitbucketPlugin) saveYaml(in interface{}, file string) (Updated bool, _ error) {
 	d, err := yaml.Marshal(in)
 	if err != nil {
 		return false, fmt.Errorf("Unable to encode bitbucket data in yaml. %s", err)
 	}
 
-	if dBefore, err := ioutil.ReadFile(file); err != nil{
+	if dBefore, err := ioutil.ReadFile(file); err != nil {
 		Updated = true
 	} else {
 		Updated = (string(d) != string(dBefore))
 	}
-	
+
 	if !Updated {
 		return
 	}
