@@ -132,6 +132,40 @@ func (bbs *BitbucketPlugin) ensureTeamExists(ret *goforjj.PluginData) (s bool) {
 	return
 }
 
+func (bbs *BitbucketPlugin) ensureProjectExists(ret *goforjj.PluginData) (s bool) {
+	//Ensure team have project (from key), else create and set Key (todo)
+	if bbs.bitbucketDeploy.ProjectKey == "" {
+		ret.Errorf("Invalid project key. The key is empty")
+		return
+	}
+
+	s = false
+
+	//try to get project
+	projects, err := bbs.Client.Teams.Projects(strings.ToLower(bbs.bitbucketDeploy.Team))
+	if err != nil {
+		log.Printf(ret.Errorf("Unable to get projects for %s team. %s", bbs.bitbucketDeploy.Team, err))
+		return
+	}
+
+	//get key
+	var projectKeys []string
+	projectdatas := projects.(map[string]interface{})["values"].([]interface{})
+	for i := 0; i < len(projectdatas); i++ {
+		projectKeys = append(projectKeys, projectdatas[i].(map[string]interface{})["key"].(string))
+	}
+	for _, projectKey := range projectKeys {
+		if projectKey == bbs.bitbucketDeploy.ProjectKey {
+			log.Printf(ret.StatusAdd("'%s' project key verified", bbs.bitbucketDeploy.ProjectKey))
+			return true
+		}
+	}
+
+	//Need to be created (todo --> go-bitbucket)
+	log.Printf(ret.Errorf("'%s' project key not exists. Project need to be created", bbs.bitbucketDeploy.ProjectKey))
+	return
+}
+
 //IsNewForge TODO
 func (bbs *BitbucketPlugin) IsNewForge(ret *goforjj.PluginData) (_ bool) {
 	c := bbs.Client.Repositories
@@ -236,13 +270,11 @@ func (r *RepositoryStruct) ensureExists(bbs *BitbucketPlugin, ret *goforjj.Plugi
 
 //reposExists TODO
 func (bbs *BitbucketPlugin) reposExists(ret *goforjj.PluginData) (err error) {
-	clientRepos := bbs.Client.Repositories //Repos
-	//client, err := bbs.Client.User.Profile() //Get current user profile
+	clientRepos := bbs.Client.Repositories
 
 	//loop
 	for name, repoData := range bbs.bitbucketDeploy.Repos {
 
-		//
 		RepoOptions := &bitbucket.RepositoryOptions{
 			Owner:    bbs.bitbucketDeploy.Team,
 			RepoSlug: name,
@@ -251,7 +283,7 @@ func (bbs *BitbucketPlugin) reposExists(ret *goforjj.PluginData) (err error) {
 		//on voit si on trouve le repo X sur bitbucket
 		if foundProject, e := clientRepos.Repository.Get(RepoOptions); e == nil {
 			//Si trouvé: err
-			if err == nil && name == bbs.app.ForjjInfra {
+			if err == nil && name == foundProject.Slug {
 				err = fmt.Errorf("Infra repo '%s' already exist in bitbucket server.", name)
 			}
 			repoData.exist = true
@@ -260,7 +292,7 @@ func (bbs *BitbucketPlugin) reposExists(ret *goforjj.PluginData) (err error) {
 				repoData.branchConnect = make(map[string]string)
 			}
 
-			//Get ssh and https remte
+			//Get ssh and https remote
 			ssh := ""
 			url := ""
 			remotes := foundProject.Links["clone"].([]interface{})

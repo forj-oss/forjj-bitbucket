@@ -184,6 +184,10 @@ func DoMaintain(r *http.Request, req *MaintainReq, ret *goforjj.PluginData) (htt
 		return
 	}
 
+	if !bbs.ensureProjectExists(ret) {
+		return
+	}
+
 	if !bbs.IsNewForge(ret) {
 		return
 	}
