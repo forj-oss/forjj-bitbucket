@@ -54,17 +54,22 @@ func DoCreate(r *http.Request, req *CreateReq, ret *goforjj.PluginData) (httpCod
 		bbs.app = &a
 	}
 
-	//Check Gitlab connection
+	//Check bitbucket connection
 	log.Println("Checking bitbucket connection.")
 	ret.StatusAdd("Connect to bitbucket...")
 
-	if git := bbs.bitbucketConnect("X", ret); git == nil { //!\\
+	if Bclient := bbs.bitbucketConnect("X", ret); Bclient == nil { //!\\
 		return
 	}
 
-	// Init Group of project
+	// Init Team
 	if !req.InitTeam(&bbs) {
 		ret.Errorf("Internal Error. Unable to define the team.")
+	}
+
+	//Init Project
+	if !req.InitProject(&bbs) {
+		ret.Errorf("Internal Error. Unable to define project.")
 	}
 
 	//Create yaml data for maintain function
@@ -175,9 +180,9 @@ func DoMaintain(r *http.Request, req *MaintainReq, ret *goforjj.PluginData) (htt
 		return
 	}
 
-	/*if !bbs.ensureTeamExists(ret){ TODO
+	if !bbs.ensureTeamExists(ret) {
 		return
-	}*/
+	}
 
 	if !bbs.IsNewForge(ret) {
 		return

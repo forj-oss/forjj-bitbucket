@@ -42,7 +42,7 @@ objects: # All objects will be delivered by forjj except workspace/infra under o
   #      help: "Github Organization name. By default, it uses the FORJJ organization name"
       team:
         only-for-actions: ["add"]
-        help: "Gitlab group name."
+        help: "Bitbucket team name."
       production-team:
         help: "Production github organization name. By default, it uses the FORJJ organization name"
         default: "{{ .Deployments.GetFromPRO \"app\" .Current.Name \"organization\" }}"
@@ -70,6 +70,9 @@ objects: # All objects will be delivered by forjj except workspace/infra under o
         required: true
         secure: true
         envar: "SECRET"
+      project-key:
+        help: "Project key for repositories"
+        default: "MyProject"
       teams-disabled:
         help: "true if the plugin should not manage github users and groups"
         default: false

@@ -45,6 +45,7 @@ type BitbucketDeployStruct struct {
 	WebHooks              map[string]WebHookStruct `yaml:",omitempty"`
 	NoRepoHook            bool                     `yaml:",omitempty"`
 	WebHookPolicy         string                   `yaml:",omitempty"`
+	ProjectKey            string
 	//...
 }
 

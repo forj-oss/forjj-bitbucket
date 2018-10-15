@@ -43,6 +43,15 @@ func (req *CreateReq) InitTeam(bbs *BitbucketPlugin) (ret bool) {
 	return
 }
 
+//InitTeam ...
+func (req *UpdateReq) InitTeam(bbs *BitbucketPlugin) (ret bool) {
+	if app, found := req.Objects.App[req.Forj.ForjjInstanceName]; found {
+		bbs.SetTeam(app)
+		ret = true
+	}
+	return
+}
+
 //SetTeam ...
 func (bbs *BitbucketPlugin) SetTeam(fromApp AppInstanceStruct) {
 	if team := fromApp.Team; team == "" {
@@ -58,9 +67,68 @@ func (bbs *BitbucketPlugin) SetTeam(fromApp AppInstanceStruct) {
 	bbs.bitbucketSource.ProdTeam = bbs.bitbucketDeploy.ProdTeam
 }
 
+//InitProject ...
+func (req *CreateReq) InitProject(bbs *BitbucketPlugin) (ret bool) {
+	if app, found := req.Objects.App[req.Forj.ForjjInstanceName]; found {
+		bbs.SetProject(app)
+		ret = true
+	}
+	return
+}
+
+//InitProject ...
+func (req *UpdateReq) InitProject(bbs *BitbucketPlugin) (ret bool) {
+	if app, found := req.Objects.App[req.Forj.ForjjInstanceName]; found {
+		bbs.SetProject(app)
+		ret = true
+	}
+	return
+}
+
+//SetProject ...
+func (bbs *BitbucketPlugin) SetProject(fromApp AppInstanceStruct) {
+	if project := fromApp.ProjectKey; project == "" {
+		bbs.bitbucketDeploy.ProjectKey = "MyProject" //Get default
+	} else {
+		bbs.bitbucketDeploy.ProjectKey = project
+	}
+}
+
 //ensureTeamExists
 func (bbs *BitbucketPlugin) ensureTeamExists(ret *goforjj.PluginData) (s bool) {
-	//TODO
+	//Ensure team exists, todo: create if not exists
+	//Ensure user is owner
+
+	if bbs.bitbucketDeploy.Team == "" {
+		ret.Errorf("Invalid team. The team is empty")
+		return
+	}
+
+	s = false
+
+	//try to get team && ensure is owner
+	data, err := bbs.Client.Teams.List("admin")
+	if err != nil {
+		log.Printf(ret.Errorf("Unable to get '%s' team information. %s", bbs.bitbucketDeploy.Team, err))
+		return
+	}
+
+	//Get string list
+	var teams []string
+	datas := data.(map[string]interface{})["values"].([]interface{})
+	for i := 0; i < len(datas); i++ {
+		teams = append(teams, datas[i].(map[string]interface{})["username"].(string))
+	}
+
+	for _, team := range teams {
+		if team == strings.ToLower(bbs.bitbucketDeploy.Team) {
+			log.Printf(ret.StatusAdd("'%s' team access verified", bbs.bitbucketDeploy.Team))
+			return true
+		}
+	}
+
+	//Need to create team (todo)
+	log.Printf(ret.Errorf("'%s' team need to be created. "))
 	return
 }
 
@@ -138,16 +206,11 @@ func (bbs *BitbucketPlugin) bitbucketSetUrl(server string) (err error) {
 func (r *RepositoryStruct) ensureExists(bbs *BitbucketPlugin, ret *goforjj.PluginData) error {
 	//test existence
 	clientRepos := bbs.Client.Repositories
-	userProfil, err := bbs.Client.User.Profile()
-	if err != nil {
-		ret.Errorf("Unable to identify owner.")
-		return err
-	}
-	user := userProfil.(map[string]interface{})
 
 	RepoOptions := &bitbucket.RepositoryOptions{
-		Owner:    user["username"].(string),
+		Owner:    bbs.bitbucketDeploy.Team,
 		RepoSlug: r.Name,
+		Project:  bbs.bitbucketDeploy.ProjectKey,
 	}
 
 	_, e := clientRepos.Repository.Get(RepoOptions)
@@ -155,6 +218,8 @@ func (r *RepositoryStruct) ensureExists(bbs *BitbucketPlugin, ret *goforjj.Plugi
 	if e != nil {
 		//Create
 		_, er := clientRepos.Repository.Create(RepoOptions)
+
+		//err
 		if er != nil {
 			ret.Errorf("Unable to create '%s'. %s.", r.Name, er)
 			return er
@@ -179,7 +244,7 @@ func (bbs *BitbucketPlugin) reposExists(ret *goforjj.PluginData) (err error) {
 
 		//
 		RepoOptions := &bitbucket.RepositoryOptions{
-			Owner:    repoData.Owner,
+			Owner:    bbs.bitbucketDeploy.Team,
 			RepoSlug: name,
 		}
 

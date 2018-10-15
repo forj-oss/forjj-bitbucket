@@ -16,11 +16,12 @@ type AppInstanceStruct struct {
 	Key string `json:"key"` // Bitbucket key to access.
 	ProDeployment string `json:"pro-deployment"` // true if current deployment is production one
 	ProductionTeam string `json:"production-team"` // Production github organization name. By default, it uses the FORJJ organization name
+	ProjectKey string `json:"project-key"` // Project key for repositories
 	ReposDisabled string `json:"repos-disabled"` // true if the plugin should not manage github repositories except the infra repository.
 	ReposWebhooksDisabled string `json:"repos-webhooks-disabled"` // true if the plugin should not manage github repositories webhooks.
 	Secret string `json:"secret"` // Bitbucket secret to access.
 	Server string `json:"server"` // Github Enterprise Server name. By default, public 'github.com' API is used.
-	Team string `json:"team"` // Gitlab group name.
+	Team string `json:"team"` // Bitbucket team name.
 	TeamHookPolicy string `json:"team-hook-policy"` // Set 'sync' to manage all repository webhooks. set 'manage' to manage only listed.
 	TeamWebhooksDisabled string `json:"team-webhooks-disabled"` // true if the plugin should not manage github organization webhooks.
 	TeamsDisabled string `json:"teams-disabled"` // true if the plugin should not manage github users and groups
@@ -222,7 +223,7 @@ const YamlDesc = "---\n" +
    "  #      help: \"Github Organization name. By default, it uses the FORJJ organization name\"\n" +
    "      team:\n" +
    "        only-for-actions: [\"add\"]\n" +
-   "        help: \"Gitlab group name.\"\n" +
+   "        help: \"Bitbucket team name.\"\n" +
    "      production-team:\n" +
    "        help: \"Production github organization name. By default, it uses the FORJJ organization name\"\n" +
    "        default: \"{{ .Deployments.GetFromPRO \\\"app\\\" .Current.Name \\\"organization\\\" }}\"\n" +
@@ -250,6 +251,9 @@ const YamlDesc = "---\n" +
    "        required: true\n" +
    "        secure: true\n" +
    "        envar: \"SECRET\"\n" +
+   "      project-key:\n" +
+   "        help: \"Project key for repositories\"\n" +
+   "        default: \"MyProject\"\n" +
    "      teams-disabled:\n" +
    "        help: \"true if the plugin should not manage github users and groups\"\n" +
    "        default: false\n" +
