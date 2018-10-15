@@ -88,7 +88,7 @@ func (req *UpdateReq) InitProject(bbs *BitbucketPlugin) (ret bool) {
 //SetProject ...
 func (bbs *BitbucketPlugin) SetProject(fromApp AppInstanceStruct) {
 	if project := fromApp.ProjectKey; project == "" {
-		bbs.bitbucketDeploy.ProjectKey = "MyProject" //Get default
+		bbs.bitbucketDeploy.ProjectKey = fromApp.ProjectKey //Set default
 	} else {
 		bbs.bitbucketDeploy.ProjectKey = project
 	}
@@ -188,7 +188,7 @@ func (bbs *BitbucketPlugin) IsNewForge(ret *goforjj.PluginData) (_ bool) {
 		if _, e := c.Repository.Get(ro); e == nil {
 			ret.Errorf("Unable to identify the infra repository. Unknown issue: %s", e)
 		} else {
-			//bbs.newForge = (resp.StatusCode != 200) TODO
+			//bbs.newForge = TOSET
 		}
 		return true
 	}
@@ -211,7 +211,7 @@ func (bbs *BitbucketPlugin) bitbucketSetUrl(server string) (err error) {
 			bbs.bitbucketSource.Urls["bitbucket-url"] = "https://bitbucket.com"
 			bbs.bitbucketSource.Urls["bitbucket-ssh"] = "git@bitbucket.com:"
 		} else {
-			//set from serveur // ! \\ TODO
+			//set from server // ! \\ TODO
 			server = "bitbucket.com"
 			bbUrl = "https://" + server + "/api/v4/"
 			bbs.bitbucketSource.Urls["bitbucket-url"] = "https://bitbucket.com"
@@ -280,11 +280,11 @@ func (bbs *BitbucketPlugin) reposExists(ret *goforjj.PluginData) (err error) {
 			RepoSlug: name,
 		}
 
-		//on voit si on trouve le repo X sur bitbucket
+		//Try to get repo on bitbucket
 		if foundProject, e := clientRepos.Repository.Get(RepoOptions); e == nil {
-			//Si trouvé: err
+			//if find err
 			if err == nil && name == foundProject.Slug {
-				err = fmt.Errorf("Infra repo '%s' already exist in bitbucket server.", name)
+				err = fmt.Errorf("Infra repo '%s' already exist in bitbucket server", name)
 			}
 			repoData.exist = true
 			if repoData.remotes == nil {

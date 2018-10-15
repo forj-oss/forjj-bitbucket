@@ -58,7 +58,7 @@ func DoCreate(r *http.Request, req *CreateReq, ret *goforjj.PluginData) (httpCod
 	log.Println("Checking bitbucket connection.")
 	ret.StatusAdd("Connect to bitbucket...")
 
-	if Bclient := bbs.bitbucketConnect("X", ret); Bclient == nil { //!\\
+	if Bclient := bbs.bitbucketConnect(bbs.app.Server, ret); Bclient == nil { //!\\
 		return
 	}
 
@@ -171,8 +171,8 @@ func DoMaintain(r *http.Request, req *MaintainReq, ret *goforjj.PluginData) (htt
 	confFile := path.Join(bbs.deployMount, req.Forj.ForjjDeploymentEnv, instance, bitbucketFile)
 
 	//read yaml file
-	if err := bbs.loadYaml(confFile /*ret, instance*/); err != nil {
-		ret.Errorf("%s" /*, err*/)
+	if err := bbs.loadYaml(confFile); err != nil {
+		ret.Errorf("%s")
 		return
 	}
 
