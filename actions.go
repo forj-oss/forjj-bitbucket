@@ -192,6 +192,11 @@ func DoMaintain(r *http.Request, req *MaintainReq, ret *goforjj.PluginData) (htt
 		return
 	}
 
+	//WebHooks
+	if !bbs.MaintainTeamHooks(ret) {
+		return
+	}
+
 	if bbs.bitbucketDeploy.NoRepos {
 		log.Printf(ret.StatusAdd("Repos maintained limited to your infra project"))
 	}
@@ -209,7 +214,12 @@ func DoMaintain(r *http.Request, req *MaintainReq, ret *goforjj.PluginData) (htt
 		if err := repoData.ensureExists(&bbs, ret); err != nil {
 			return
 		}
-		//...
+
+		//WebHooks
+		/*if !bbs.MaintainHooks(&repoData, ret) {
+			return
+		}*/
+
 		log.Printf(ret.StatusAdd("Project maintained: %s", name))
 	}
 

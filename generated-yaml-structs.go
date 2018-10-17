@@ -12,7 +12,7 @@ package main
 
 type AppInstanceStruct struct {
 	ForjjInfra string `json:"forjj-infra"` // Name of the Infra repository to use in github if requested.
-	ForjjTeam string `json:"forjj-team"` // Default FORJJ group. Used by default as gitlab group. If you want different one, use --gitlab-group
+	ForjjTeam string `json:"forjj-team"` // Default FORJJ team. Used by default as bitbucket team. If you want different one, use --bitbucket-team
 	Key string `json:"key"` // Bitbucket key to access.
 	ProDeployment string `json:"pro-deployment"` // true if current deployment is production one
 	ProductionTeam string `json:"production-team"` // Production github organization name. By default, it uses the FORJJ organization name
@@ -89,7 +89,7 @@ type WebhooksInstanceStruct struct {
 	Name string `json:"name"` // webhook name
 	PayloadFormat string `json:"payload-format"` // The media type used to serialize the payloads. Supported values include json and form. The default is form.
 	Repos string `json:"repos"` // List of repos separated by comma subscribing to the webhook.
-	SslCheck string `json:"ssl-check"` // true (default) to ask gitlab to verify the SSL.
+	SslCheck string `json:"ssl-check"` // true (default) to ask bitbucket to verify the SSL.
 	Team string `json:"team"` // List to enable the webhook at team level. default is false.
 	Url string `json:"url"` // Webhook url to set
 
@@ -217,7 +217,7 @@ const YamlDesc = "---\n" +
    "        help: \"Github Enterprise Server name. By default, public 'github.com' API is used.\"\n" +
    "      forjj-team:\n" +
    "        only-for-actions: [\"add\"]\n" +
-   "        help: \"Default FORJJ group. Used by default as gitlab group. If you want different one, use --gitlab-group\"\n" +
+   "        help: \"Default FORJJ team. Used by default as bitbucket team. If you want different one, use --bitbucket-team\"\n" +
    "#      organization:\n" +
    " #       only-for-actions: [\"add\"]\n" +
    "  #      help: \"Github Organization name. By default, it uses the FORJJ organization name\"\n" +
@@ -355,6 +355,6 @@ const YamlDesc = "---\n" +
    "        help: set 'true' (default) to activate the webhook, 'false' otherwise or 'ignore' to ignore this setup.\n" +
    "        default: true\n" +
    "      ssl-check:\n" +
-   "        help: true (default) to ask gitlab to verify the SSL.\n" +
+   "        help: true (default) to ask bitbucket to verify the SSL.\n" +
    "        default: true\n" +
    ""

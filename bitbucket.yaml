@@ -36,7 +36,7 @@ objects: # All objects will be delivered by forjj except workspace/infra under o
         help: "Github Enterprise Server name. By default, public 'github.com' API is used."
       forjj-team:
         only-for-actions: ["add"]
-        help: "Default FORJJ group. Used by default as gitlab group. If you want different one, use --gitlab-group"
+        help: "Default FORJJ team. Used by default as bitbucket team. If you want different one, use --bitbucket-team"
 #      organization:
  #       only-for-actions: ["add"]
   #      help: "Github Organization name. By default, it uses the FORJJ organization name"
@@ -174,5 +174,5 @@ objects: # All objects will be delivered by forjj except workspace/infra under o
         help: set 'true' (default) to activate the webhook, 'false' otherwise or 'ignore' to ignore this setup.
         default: true
       ssl-check:
-        help: true (default) to ask gitlab to verify the SSL.
+        help: true (default) to ask bitbucket to verify the SSL.
         default: true

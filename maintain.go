@@ -31,5 +31,10 @@ func (r *MaintainReq) instantiate(ret *goforjj.PluginData) (status bool) {
 
 //MaintainTeamHooks TODO
 func (bbs *BitbucketPlugin) MaintainTeamHooks(ret *goforjj.PluginData) (_ bool) {
+
 	return
 }
+
+/*func MaintainHooks() {
+
+}*/

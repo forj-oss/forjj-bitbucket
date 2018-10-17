@@ -36,7 +36,7 @@ type BitbucketPlugin struct {
 
 type BitbucketDeployStruct struct {
 	goforjj.PluginService `yaml:",inline"`            //urls
-	Repos                 map[string]RepositoryStruct // projects managed in gitlab
+	Repos                 map[string]RepositoryStruct // repos managed in bitbucket
 	NoRepos               bool                        `yaml:",omitempty"`
 	ProdTeam              string
 	Team                  string
