@@ -12,17 +12,18 @@ package main
 
 type AppInstanceStruct struct {
 	ForjjInfra string `json:"forjj-infra"` // Name of the Infra repository to use in github if requested.
-	ForjjTeam string `json:"forjj-team"` // Default FORJJ group. Used by default as gitlab group. If you want different one, use --gitlab-group
+	ForjjTeam string `json:"forjj-team"` // Default FORJJ team. Used by default as bitbucket team. If you want different one, use --bitbucket-team
 	Key string `json:"key"` // Bitbucket key to access.
-	OrgHookPolicy string `json:"org-hook-policy"` // Set 'sync' to manage all repository webhooks. set 'manage' to manage only listed.
-	OrganizationWebhooksDisabled string `json:"organization-webhooks-disabled"` // true if the plugin should not manage github organization webhooks.
 	ProDeployment string `json:"pro-deployment"` // true if current deployment is production one
 	ProductionTeam string `json:"production-team"` // Production github organization name. By default, it uses the FORJJ organization name
+	ProjectKey string `json:"project-key"` // Project key for repositories
 	ReposDisabled string `json:"repos-disabled"` // true if the plugin should not manage github repositories except the infra repository.
 	ReposWebhooksDisabled string `json:"repos-webhooks-disabled"` // true if the plugin should not manage github repositories webhooks.
 	Secret string `json:"secret"` // Bitbucket secret to access.
 	Server string `json:"server"` // Github Enterprise Server name. By default, public 'github.com' API is used.
-	Team string `json:"team"` // Gitlab group name.
+	Team string `json:"team"` // Bitbucket team name.
+	TeamHookPolicy string `json:"team-hook-policy"` // Set 'sync' to manage all repository webhooks. set 'manage' to manage only listed.
+	TeamWebhooksDisabled string `json:"team-webhooks-disabled"` // true if the plugin should not manage github organization webhooks.
 	TeamsDisabled string `json:"teams-disabled"` // true if the plugin should not manage github users and groups
 
 }
@@ -75,6 +76,25 @@ type UserInstanceStruct struct {
 
 }
 
+// Object webhooks groups structure
+
+// Groups structure
+
+
+// Object Instance structures
+
+type WebhooksInstanceStruct struct {
+	Enabled string `json:"enabled"` // set 'true' (default) to activate the webhook, 'false' otherwise or 'ignore' to ignore this setup.
+	Events string `json:"events"` // events requested separated by comma
+	Name string `json:"name"` // webhook name
+	PayloadFormat string `json:"payload-format"` // The media type used to serialize the payloads. Supported values include json and form. The default is form.
+	Repos string `json:"repos"` // List of repos separated by comma subscribing to the webhook.
+	SslCheck string `json:"ssl-check"` // true (default) to ask bitbucket to verify the SSL.
+	Team string `json:"team"` // List to enable the webhook at team level. default is false.
+	Url string `json:"url"` // Webhook url to set
+
+}
+
 
 // ************************
 // Create request structure
@@ -106,6 +126,7 @@ type CreateArgReq struct {
 	Group map[string]GroupInstanceStruct `json:"group"` // Object details
 	Repo map[string]RepoInstanceStruct `json:"repo"` // Object details
 	User map[string]UserInstanceStruct `json:"user"` // Object details
+	Webhooks map[string]WebhooksInstanceStruct `json:"webhooks"` // Object details
 }
 
 // ************************
@@ -127,6 +148,7 @@ type UpdateArgReq struct {
 	Group map[string]GroupInstanceStruct `json:"group"` // Object details
 	Repo map[string]RepoInstanceStruct `json:"repo"` // Object details
 	User map[string]UserInstanceStruct `json:"user"` // Object details
+	Webhooks map[string]WebhooksInstanceStruct `json:"webhooks"` // Object details
 }
 
 // **************************
@@ -195,13 +217,13 @@ const YamlDesc = "---\n" +
    "        help: \"Github Enterprise Server name. By default, public 'github.com' API is used.\"\n" +
    "      forjj-team:\n" +
    "        only-for-actions: [\"add\"]\n" +
-   "        help: \"Default FORJJ group. Used by default as gitlab group. If you want different one, use --gitlab-group\"\n" +
+   "        help: \"Default FORJJ team. Used by default as bitbucket team. If you want different one, use --bitbucket-team\"\n" +
    "#      organization:\n" +
    " #       only-for-actions: [\"add\"]\n" +
    "  #      help: \"Github Organization name. By default, it uses the FORJJ organization name\"\n" +
    "      team:\n" +
    "        only-for-actions: [\"add\"]\n" +
-   "        help: \"Gitlab group name.\"\n" +
+   "        help: \"Bitbucket team name.\"\n" +
    "      production-team:\n" +
    "        help: \"Production github organization name. By default, it uses the FORJJ organization name\"\n" +
    "        default: \"{{ .Deployments.GetFromPRO \\\"app\\\" .Current.Name \\\"organization\\\" }}\"\n" +
@@ -229,19 +251,22 @@ const YamlDesc = "---\n" +
    "        required: true\n" +
    "        secure: true\n" +
    "        envar: \"SECRET\"\n" +
+   "      project-key:\n" +
+   "        help: \"Project key for repositories\"\n" +
+   "        default: \"MyProject\"\n" +
    "      teams-disabled:\n" +
    "        help: \"true if the plugin should not manage github users and groups\"\n" +
    "        default: false\n" +
    "      repos-disabled:\n" +
    "        help: \"true if the plugin should not manage github repositories except the infra repository.\"\n" +
    "        default: false\n" +
-   "      organization-webhooks-disabled:\n" +
+   "      team-webhooks-disabled:\n" +
    "        help: true if the plugin should not manage github organization webhooks.\n" +
    "        default: false\n" +
    "      repos-webhooks-disabled:\n" +
    "        help: true if the plugin should not manage github repositories webhooks.\n" +
    "        default: false\n" +
-   "      org-hook-policy:\n" +
+   "      team-hook-policy:\n" +
    "        help: Set 'sync' to manage all repository webhooks. set 'manage' to manage only listed.\n" +
    "        default: sync\n" +
    "      pro-deployment:\n" +
@@ -308,4 +333,28 @@ const YamlDesc = "---\n" +
    "        internal: true\n" +
    "        help: true if the repo is identified by forjj as deployable in the current deployment context\n" +
    "        default: \"{{ if (index .Forjfile.Repos .Current.Name).IsDeployable }}true{{ end }}\"\n" +
+   "  webhooks:\n" +
+   "    identified_by_flag: name\n" +
+   "    flags:\n" +
+   "      name:\n" +
+   "        help: webhook name\n" +
+   "        require: true\n" +
+   "      url:\n" +
+   "        help: Webhook url to set\n" +
+   "      payload-format:\n" +
+   "        help: The media type used to serialize the payloads. Supported values include json and form. The default is form.\n" +
+   "        default: form\n" +
+   "      events:\n" +
+   "        help: events requested separated by comma\n" +
+   "      repos:\n" +
+   "        help: List of repos separated by comma subscribing to the webhook.\n" +
+   "      team:\n" +
+   "        help: List to enable the webhook at team level. default is false.\n" +
+   "        default: false\n" +
+   "      enabled:\n" +
+   "        help: set 'true' (default) to activate the webhook, 'false' otherwise or 'ignore' to ignore this setup.\n" +
+   "        default: true\n" +
+   "      ssl-check:\n" +
+   "        help: true (default) to ask bitbucket to verify the SSL.\n" +
+   "        default: true\n" +
    ""

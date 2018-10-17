@@ -4,9 +4,10 @@
 package main
 
 import (
-	"github.com/forj-oss/goforjj"
 	"log"
 	"os"
+
+	"github.com/forj-oss/goforjj"
 )
 
 //CheckSourceExistence Return ok if the jenkins instance exist
@@ -22,7 +23,18 @@ func (r *MaintainReq) CheckSourceExistence(ret *goforjj.PluginData) (status bool
 	return true
 }
 
+//instantiate ...
 func (r *MaintainReq) instantiate(ret *goforjj.PluginData) (status bool) {
 
 	return true
 }
+
+//MaintainTeamHooks TODO
+func (bbs *BitbucketPlugin) MaintainTeamHooks(ret *goforjj.PluginData) (_ bool) {
+
+	return
+}
+
+/*func MaintainHooks() {
+
+}*/

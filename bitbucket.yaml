@@ -36,13 +36,13 @@ objects: # All objects will be delivered by forjj except workspace/infra under o
         help: "Github Enterprise Server name. By default, public 'github.com' API is used."
       forjj-team:
         only-for-actions: ["add"]
-        help: "Default FORJJ group. Used by default as gitlab group. If you want different one, use --gitlab-group"
+        help: "Default FORJJ team. Used by default as bitbucket team. If you want different one, use --bitbucket-team"
 #      organization:
  #       only-for-actions: ["add"]
   #      help: "Github Organization name. By default, it uses the FORJJ organization name"
       team:
         only-for-actions: ["add"]
-        help: "Gitlab group name."
+        help: "Bitbucket team name."
       production-team:
         help: "Production github organization name. By default, it uses the FORJJ organization name"
         default: "{{ .Deployments.GetFromPRO \"app\" .Current.Name \"organization\" }}"
@@ -70,19 +70,22 @@ objects: # All objects will be delivered by forjj except workspace/infra under o
         required: true
         secure: true
         envar: "SECRET"
+      project-key:
+        help: "Project key for repositories"
+        default: "MyProject"
       teams-disabled:
         help: "true if the plugin should not manage github users and groups"
         default: false
       repos-disabled:
         help: "true if the plugin should not manage github repositories except the infra repository."
         default: false
-      organization-webhooks-disabled:
+      team-webhooks-disabled:
         help: true if the plugin should not manage github organization webhooks.
         default: false
       repos-webhooks-disabled:
         help: true if the plugin should not manage github repositories webhooks.
         default: false
-      org-hook-policy:
+      team-hook-policy:
         help: Set 'sync' to manage all repository webhooks. set 'manage' to manage only listed.
         default: sync
       pro-deployment:
@@ -149,3 +152,27 @@ objects: # All objects will be delivered by forjj except workspace/infra under o
         internal: true
         help: true if the repo is identified by forjj as deployable in the current deployment context
         default: "{{ if (index .Forjfile.Repos .Current.Name).IsDeployable }}true{{ end }}"
+  webhooks:
+    identified_by_flag: name
+    flags:
+      name:
+        help: webhook name
+        require: true
+      url:
+        help: Webhook url to set
+      payload-format:
+        help: The media type used to serialize the payloads. Supported values include json and form. The default is form.
+        default: form
+      events:
+        help: events requested separated by comma
+      repos:
+        help: List of repos separated by comma subscribing to the webhook.
+      team:
+        help: List to enable the webhook at team level. default is false.
+        default: false
+      enabled:
+        help: set 'true' (default) to activate the webhook, 'false' otherwise or 'ignore' to ignore this setup.
+        default: true
+      ssl-check:
+        help: true (default) to ask bitbucket to verify the SSL.
+        default: true
